@@ -18,11 +18,13 @@
   * { box-sizing: border-box; }
 
   html, body {
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     background: var(--paper);
     color: var(--ink);
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   body {
@@ -32,15 +34,8 @@
     align-items: center;
   }
 
-  header {
-    width: 100%;
-    max-width: 640px;
-    padding: 28px 4px 10px 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  }
+  /* header repurposed as app-ribbon — see .app-ribbon below */
+  header { display: none; }
 
   header .title {
     font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
@@ -69,12 +64,12 @@
   header .status .dot.ready { background: #6E8B5A; }
 
   main {
-    width: 100%;
-    max-width: 640px;
     flex: 1;
-    padding: 10px 4px 40px 4px;
+    padding: 10px 24px 20px;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
   }
 
   #editor {
@@ -126,9 +121,7 @@
   }
 
   footer {
-    width: 100%;
-    max-width: 640px;
-    padding: 12px 4px 24px 4px;
+    padding: 8px 24px 10px;
     border-top: 1px solid var(--accent-line);
     display: flex;
     justify-content: space-between;
@@ -136,6 +129,7 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     font-size: 12px;
     color: var(--ink-soft);
+    flex-shrink: 0;
   }
 
   footer button {
@@ -210,19 +204,32 @@
   }
 
   @media (max-width: 680px) {
-    header, main, footer, .toolbar, .tabbar { padding-left: 16px; padding-right: 16px; }
+    header, main, footer, .toolbar, .tabbar {
+    padding: 6px 12px 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--accent-line);
+  }
   }
 
   /* ---- Carta: toolbar, tabs, find/replace ---- */
   .toolbar {
     width: 100%;
-    max-width: 640px;
-    padding: 0 4px;
+    padding: 0 16px;
+    height: 44px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     font-size: 13px;
+    border-bottom: 1px solid var(--accent-line);
+    background: var(--paper);
+    box-shadow: 0 1px 0 var(--accent-line);
   }
 
   .toolbar button, .toolbar .menu-btn {
@@ -804,28 +811,258 @@
   }
   .library-actions button:hover { background: var(--flag-bg); }
 
+
+  /* ════════════════════════════════
+     TWO-COLUMN APP LAYOUT
+     ════════════════════════════════ */
+  .app-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Right panel — always visible on ≥900px */
+  .app-right {
+    width: 320px;
+    flex-shrink: 0;
+    border-left: 2px solid var(--accent-line);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--paper);
+  }
+
+  /* Ribbon title */
+  .ribbon-title {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+  }
+  .ribbon-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  .ribbon-spacer { flex: 1; }
+
+  /* ════════════════════════════════
+     RIGHT PANEL ACCORDION
+     ════════════════════════════════ */
+  .rp-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--accent-line);
+    transition: flex 0.18s ease;
+  }
+  .rp-section.rp-open {
+    flex: 1;
+    min-height: 120px;
+  }
+
+  .rp-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    cursor: pointer;
+    user-select: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .rp-header:hover { background: var(--flag-bg); color: var(--ink); }
+  .rp-section.rp-open .rp-header { color: var(--ink); background: var(--flag-bg); }
+
+  .rp-header-icon { font-size: 14px; }
+  .rp-header-title { flex: 1; }
+  .rp-header-badge {
+    font-size: 10px; font-weight: 400;
+    color: var(--ink-soft); font-style: italic;
+  }
+  .rp-arrow {
+    font-size: 9px; opacity: 0.6;
+    transition: transform 0.15s;
+  }
+  .rp-section.rp-open .rp-arrow { transform: rotate(0deg); opacity: 1; }
+
+  .rp-body {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .rp-section.rp-open .rp-body { display: flex; }
+
+  /* ────────────────────
+     Dict panel in sidebar
+     ──────────────────── */
+  #rpDictContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 13px;
+  }
+  .rp-dict-hint {
+    color: var(--ink-soft);
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 12px 0;
+  }
+  .rp-dict-word {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .rp-dict-entry {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--accent-line);
+  }
+  .rp-dict-entry:last-child { border-bottom: none; }
+  .rp-dict-pos {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.4px; color: var(--flag);
+    margin-bottom: 3px;
+  }
+  .rp-dict-def { color: var(--ink); line-height: 1.55; }
+  .rp-dict-ex {
+    color: var(--ink-soft); font-style: italic;
+    font-size: 12px; margin-top: 3px;
+  }
+  .rp-dict-syns {
+    display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px;
+  }
+  .rp-syn-chip {
+    font-size: 12px; padding: 3px 8px;
+    background: var(--flag-bg);
+    border: 1px solid var(--accent-line);
+    border-radius: 4px; cursor: pointer; color: var(--ink);
+  }
+  .rp-syn-chip:hover { background: var(--flag); color: var(--paper); border-color: var(--flag); }
+  .rp-dict-footer {
+    padding: 8px 14px;
+    border-top: 1px solid var(--accent-line);
+    font-size: 11px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .rp-dict-footer button {
+    font-size: 11px; padding: 3px 8px;
+    background: var(--paper-edge); border: 1px solid var(--accent-line);
+    border-radius: 4px; cursor: pointer; color: var(--ink); font-family: inherit;
+  }
+
+  /* ────────────────────
+     Sanskrit in sidebar (reuse .amara-* CSS already defined)
+     ──────────────────── */
+  #rpAmaraWrap {
+    flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+  }
+  #rpAmaraWrap .amara-tabs { padding: 0 10px; }
+  #rpAmaraWrap .amara-body { flex: 1; min-height: 0; overflow: hidden; }
+  #rpAmaraWrap .amara-pane { padding: 10px; }
+  .rp-amara-footer {
+    padding: 8px 14px;
+    border-top: 1px solid var(--accent-line);
+    font-size: 11px; color: var(--ink-soft);
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .rp-amara-footer button {
+    font-size: 11px; padding: 3px 8px;
+    background: var(--paper-edge); border: 1px solid var(--accent-line);
+    border-radius: 4px; cursor: pointer; color: var(--ink); font-family: inherit;
+  }
+
+  /* ────────────────────
+     Keyboard in sidebar
+     ──────────────────── */
+  #rpKeyboardWrap {
+    flex: 1; display: flex; flex-direction: column;
+    min-height: 0; overflow: hidden;
+  }
+  #rpKeyboardWrap .tkb-header { padding: 6px 10px 0; flex-shrink: 0; }
+  #rpKeyboardWrap .tkb-pane { overflow-y: auto; flex: 1; min-height: 0; }
+
+  /* ════════════════════════════════
+     MOBILE / NARROW: collapse right panel
+     ════════════════════════════════ */
+  @media (max-width: 900px) {
+    .app-right {
+      display: none;
+      position: fixed;
+      right: 0; top: 44px; bottom: 0;
+      z-index: 100;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+    }
+    .app-right.mobile-open { display: flex; }
+    .ribbon-panel-toggle { display: flex !important; }
+  }
+  .ribbon-panel-toggle { display: none; }
+
+  /* findReplacePanel inside app-left */
+  #findReplacePanel {
+    flex-shrink: 0;
+  }
+
+  /* Editor fills left column properly */
+  #editor {
+    flex: 1;
+    min-height: 200px;
+    max-width: 680px;
+  }
+
+  /* Remove old tabbar padding override that only applied to media */
+  @media (max-width: 680px) {
+    .toolbar, .app-right { padding-left: 10px; padding-right: 10px; }
+  }
+
 </style>
 </head>
 <body>
 
-<header>
-  <span class="title">Carta</span>
-  <span class="status"><span class="dot" id="statusDot"></span><span id="statusText">loading grammar engine…</span></span>
-</header>
-
+<!-- ══════════════════════════════════════
+     TOOLBAR RIBBON (full width, 44px)
+══════════════════════════════════════ -->
 <div class="toolbar">
+  <span class="ribbon-title">Carta</span>
+  <span class="ribbon-status">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">loading…</span>
+  </span>
+  <div class="toolbar-sep"></div>
   <button id="newDocBtn">+ New</button>
   <button id="openDocBtn">Open</button>
   <input type="file" id="fileInput" accept=".txt,.md,.markdown" multiple style="display:none">
   <div class="toolbar-sep"></div>
   <button id="findBtn">Find &amp; Replace</button>
-  <div class="toolbar-sep"></div>
-  <button id="importDictBtn">Dictionary: <span id="dictStatus">not loaded</span></button>
-  <input type="file" id="dictFileInput" accept=".json" style="display:none">
-  <div class="toolbar-sep"></div>
-  <button id="importAmaraBtn">Sanskrit: <span id="amaraStatus">not loaded</span></button>
-  <input type="file" id="amaraFileInput" accept=".json" style="display:none">  <div class="toolbar-sep"></div>
-  <button id="teluguKbBtn">తె కీబోర్డ్</button>
   <div class="toolbar-sep"></div>
   <div class="export-menu-wrap">
     <button class="menu-btn" id="exportBtn">Export ▾</button>
@@ -847,10 +1084,11 @@
       <button data-export="md-all-merged">All merged as one .md</button>
     </div>
   </div>
+  <div class="ribbon-spacer"></div>
+  <button class="ribbon-panel-toggle" id="rpToggleBtn" title="Toggle help panel">☰ Help</button>
 </div>
 
-<div class="tabbar" id="tabBar"></div>
-
+<!-- Find & Replace bar (full width, below ribbon) -->
 <div id="findReplacePanel">
   <input type="text" id="findInput" placeholder="Find">
   <input type="text" id="replaceInput" placeholder="Replace with">
@@ -862,163 +1100,197 @@
   <button id="findCloseBtn">✕</button>
 </div>
 
-<main>
-  <div id="editor" contenteditable="true" data-placeholder="Start writing…" spellcheck="false"></div>
-</main>
+<!-- ══════════════════════════════════════
+     APP BODY: left editor + right panel
+══════════════════════════════════════ -->
+<div class="app-body">
 
-<footer>
-  <span id="wordCount">0 words</span>
-  <span class="doc-actions">
-    <button id="renameBtn">Rename</button>
-    <button id="clearBtn">Clear</button>
-  </span>
-</footer>
+  <!-- ── LEFT: tabs + editor + footer ── -->
+  <div class="app-left">
+    <div class="tabbar" id="tabBar"></div>
+    <main>
+      <div id="editor" contenteditable="true" data-placeholder="Start writing… (double-click any word for definitions)" spellcheck="false"></div>
+    </main>
+    <footer>
+      <span id="wordCount">0 words</span>
+      <span class="doc-actions">
+        <button id="renameBtn">Rename</button>
+        <button id="clearBtn">Clear</button>
+      </span>
+    </footer>
+  </div>
+
+  <!-- ── RIGHT: accordion help panel ── -->
+  <div class="app-right" id="appRight">
+
+    <!-- ① Dictionary (WordNet) -->
+    <div class="rp-section" id="rp-dict">
+      <button class="rp-header" data-rp="dict">
+        <span class="rp-header-icon">📖</span>
+        <span class="rp-header-title">Dictionary</span>
+        <span class="rp-header-badge" id="dictStatus">not loaded</span>
+        <span class="rp-arrow">▶</span>
+      </button>
+      <div class="rp-body">
+        <div id="rpDictContent">
+          <p class="rp-dict-hint">Double-click any word in the editor to look it up here.</p>
+        </div>
+        <div class="rp-dict-footer">
+          <span id="dictLoadLabel">WordNet offline</span>
+          <button id="importDictBtn">Import .json</button>
+          <input type="file" id="dictFileInput" accept=".json" style="display:none">
+        </div>
+      </div>
+    </div>
+
+    <!-- ② Sanskrit (Amarakosha) -->
+    <div class="rp-section" id="rp-amara">
+      <button class="rp-header" data-rp="amara">
+        <span class="rp-header-icon">ॐ</span>
+        <span class="rp-header-title">Sanskrit</span>
+        <span class="rp-header-badge" id="amaraStatus">not loaded</span>
+        <span class="rp-arrow">▶</span>
+      </button>
+      <div class="rp-body">
+        <div id="rpAmaraWrap">
+          <div class="amara-tabs">
+            <button class="amara-tab active" data-tab="san">Sanskrit → En</button>
+            <button class="amara-tab" data-tab="eng">En → Sanskrit</button>
+            <button class="amara-tab" data-tab="poly">Two → One</button>
+          </div>
+          <div class="amara-body">
+            <div class="amara-pane active" id="amara-san">
+              <div class="amara-search-row">
+                <input type="text" id="amaraSanInput" placeholder="Devanagari word…">
+                <button id="amaraSanSearch">→</button>
+              </div>
+              <div id="amaraSanResults"></div>
+            </div>
+            <div class="amara-pane" id="amara-eng">
+              <div class="amara-search-row">
+                <input type="text" id="amaraEngInput" placeholder="English concept…">
+                <button id="amaraEngSearch">→</button>
+              </div>
+              <div id="amaraEngResults"></div>
+            </div>
+            <div class="amara-pane" id="amara-poly">
+              <p class="amara-help">Two meanings → one Sanskrit word.</p>
+              <div class="amara-search-row">
+                <input type="text" id="amaraPoly1" placeholder="e.g. sun">
+                <input type="text" id="amaraPoly2" placeholder="e.g. deva">
+                <button id="amaraPolySearch">→</button>
+              </div>
+              <div id="amaraPolyResults"></div>
+            </div>
+          </div>
+        </div>
+        <div class="rp-amara-footer">
+          <span id="amaraLoadLabel">Amarakosha offline</span>
+          <button id="importAmaraBtn">Import .json</button>
+          <input type="file" id="amaraFileInput" accept=".json" style="display:none">
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ Telugu Keyboard -->
+    <div class="rp-section" id="rp-keyboard">
+      <button class="rp-header" data-rp="keyboard">
+        <span class="rp-header-icon">⌨</span>
+        <span class="rp-header-title">తె Keyboard</span>
+        <span class="rp-arrow">▶</span>
+      </button>
+      <div class="rp-body">
+        <div id="rpKeyboardWrap">
+          <div class="tkb-header">
+            <div class="tkb-tabs">
+              <button class="tkb-tab active" data-tkb="letters">అ Letters</button>
+              <button class="tkb-tab" data-tkb="phonetic">🔤 Phonetic</button>
+              <button class="tkb-tab" data-tkb="special">✦ Special</button>
+            </div>
+          </div>
+          <!-- TAB 1: Syllable builder -->
+          <div class="tkb-pane active" id="tkb-letters">
+            <div class="tkb-syllable-preview" id="tkbPreview">
+              <span id="tkbPreviewText" class="tkb-preview-text">అక్షరం ఎంచుకోండి</span>
+              <button class="tkb-preview-commit" id="tkbCommit">↩ చేర్చు</button>
+              <button class="tkb-preview-clear" id="tkbClear">✕</button>
+            </div>
+            <div class="tkb-section-label">హల్లులు</div>
+            <div class="tkb-row" id="tkbConsonants">
+              <button class="tkb-key tkb-cons" data-c="క">క</button><button class="tkb-key tkb-cons" data-c="ఖ">ఖ</button><button class="tkb-key tkb-cons" data-c="గ">గ</button><button class="tkb-key tkb-cons" data-c="ఘ">ఘ</button><button class="tkb-key tkb-cons" data-c="ఙ">ఙ</button>
+              <button class="tkb-key tkb-cons" data-c="చ">చ</button><button class="tkb-key tkb-cons" data-c="ఛ">ఛ</button><button class="tkb-key tkb-cons" data-c="జ">జ</button><button class="tkb-key tkb-cons" data-c="ఝ">ఝ</button><button class="tkb-key tkb-cons" data-c="ఞ">ఞ</button>
+              <button class="tkb-key tkb-cons" data-c="ట">ట</button><button class="tkb-key tkb-cons" data-c="ఠ">ఠ</button><button class="tkb-key tkb-cons" data-c="డ">డ</button><button class="tkb-key tkb-cons" data-c="ఢ">ఢ</button><button class="tkb-key tkb-cons" data-c="ణ">ణ</button>
+              <button class="tkb-key tkb-cons" data-c="త">త</button><button class="tkb-key tkb-cons" data-c="థ">థ</button><button class="tkb-key tkb-cons" data-c="ద">ద</button><button class="tkb-key tkb-cons" data-c="ధ">ధ</button><button class="tkb-key tkb-cons" data-c="న">న</button>
+              <button class="tkb-key tkb-cons" data-c="ప">ప</button><button class="tkb-key tkb-cons" data-c="ఫ">ఫ</button><button class="tkb-key tkb-cons" data-c="బ">బ</button><button class="tkb-key tkb-cons" data-c="భ">భ</button><button class="tkb-key tkb-cons" data-c="మ">మ</button>
+              <button class="tkb-key tkb-cons" data-c="య">య</button><button class="tkb-key tkb-cons" data-c="ర">ర</button><button class="tkb-key tkb-cons" data-c="ల">ల</button><button class="tkb-key tkb-cons" data-c="వ">వ</button>
+              <button class="tkb-key tkb-cons" data-c="శ">శ</button><button class="tkb-key tkb-cons" data-c="ష">ష</button><button class="tkb-key tkb-cons" data-c="స">స</button><button class="tkb-key tkb-cons" data-c="హ">హ</button>
+              <button class="tkb-key tkb-cons" data-c="ళ">ళ</button><button class="tkb-key tkb-cons" data-c="ఱ">ఱ</button>
+            </div>
+            <div class="tkb-vowel-strip" id="tkbVowelStrip">
+              <span class="tkb-vowel-label">vowel sign:</span>
+              <button class="tkb-vsign" data-v="">్</button>
+              <button class="tkb-vsign" data-v="ా">ా</button><button class="tkb-vsign" data-v="ి">ి</button><button class="tkb-vsign" data-v="ీ">ీ</button>
+              <button class="tkb-vsign" data-v="ు">ు</button><button class="tkb-vsign" data-v="ూ">ూ</button><button class="tkb-vsign" data-v="ృ">ృ</button>
+              <button class="tkb-vsign" data-v="ె">ె</button><button class="tkb-vsign" data-v="ే">ే</button><button class="tkb-vsign" data-v="ై">ై</button>
+              <button class="tkb-vsign" data-v="ొ">ొ</button><button class="tkb-vsign" data-v="ో">ో</button><button class="tkb-vsign" data-v="ౌ">ౌ</button>
+              <button class="tkb-vsign" data-v="ం">ం</button><button class="tkb-vsign" data-v="ః">ః</button>
+              <button class="tkb-vsign tkb-vsign-join" data-v="JOIN">+ join</button>
+            </div>
+            <div class="tkb-section-label">అచ్చులు</div>
+            <div class="tkb-row">
+              <button class="tkb-key tkb-direct" data-c="అ">అ</button><button class="tkb-key tkb-direct" data-c="ఆ">ఆ</button><button class="tkb-key tkb-direct" data-c="ఇ">ఇ</button><button class="tkb-key tkb-direct" data-c="ఈ">ఈ</button>
+              <button class="tkb-key tkb-direct" data-c="ఉ">ఉ</button><button class="tkb-key tkb-direct" data-c="ఊ">ఊ</button><button class="tkb-key tkb-direct" data-c="ఋ">ఋ</button>
+              <button class="tkb-key tkb-direct" data-c="ఎ">ఎ</button><button class="tkb-key tkb-direct" data-c="ఏ">ఏ</button><button class="tkb-key tkb-direct" data-c="ఐ">ఐ</button>
+              <button class="tkb-key tkb-direct" data-c="ఒ">ఒ</button><button class="tkb-key tkb-direct" data-c="ఓ">ఓ</button><button class="tkb-key tkb-direct" data-c="ఔ">ఔ</button>
+            </div>
+            <div class="tkb-actions">
+              <button class="tkb-action-btn" id="tkbBackspace">⌫</button>
+              <button class="tkb-action-btn tkb-space-btn" id="tkbSpace">Space</button>
+              <button class="tkb-action-btn" id="tkbNewline">↵</button>
+            </div>
+          </div>
+          <!-- TAB 2: Phonetic -->
+          <div class="tkb-pane" id="tkb-phonetic">
+            <p class="tkb-help">Type phonetically → Telugu suggestions (needs internet).</p>
+            <div class="tkb-phonetic-row">
+              <input type="text" id="tkbPhoneticInput" placeholder="e.g. stree, krishna…" autocomplete="off" spellcheck="false">
+              <button id="tkbPhoneticSearch">→</button>
+            </div>
+            <div id="tkbSuggestions" class="tkb-suggestions"></div>
+            <div class="tkb-phonetic-examples">
+              <span class="tkb-ex-label">Quick:</span>
+              <button class="tkb-example" data-word="namaskaram">namaskaram</button>
+              <button class="tkb-example" data-word="stree">stree</button>
+              <button class="tkb-example" data-word="krishna">krishna</button>
+              <button class="tkb-example" data-word="bhagavadgita">bhagavadgita</button>
+            </div>
+          </div>
+          <!-- TAB 3: Special -->
+          <div class="tkb-pane" id="tkb-special">
+            <div class="tkb-section-label">సంఖ్యలు</div>
+            <div class="tkb-row">
+              <button class="tkb-key tkb-direct" data-c="౦">౦</button><button class="tkb-key tkb-direct" data-c="౧">౧</button><button class="tkb-key tkb-direct" data-c="౨">౨</button><button class="tkb-key tkb-direct" data-c="౩">౩</button><button class="tkb-key tkb-direct" data-c="౪">౪</button>
+              <button class="tkb-key tkb-direct" data-c="౫">౫</button><button class="tkb-key tkb-direct" data-c="౬">౬</button><button class="tkb-key tkb-direct" data-c="౭">౭</button><button class="tkb-key tkb-direct" data-c="౮">౮</button><button class="tkb-key tkb-direct" data-c="౯">౯</button>
+            </div>
+            <div class="tkb-section-label">విరాముచిహ్నాలు</div>
+            <div class="tkb-row">
+              <button class="tkb-key tkb-direct" data-c="।">।</button><button class="tkb-key tkb-direct" data-c="॥">॥</button><button class="tkb-key tkb-direct" data-c="ఽ">ఽ</button><button class="tkb-key tkb-direct" data-c="ఌ">ఌ</button><button class="tkb-key tkb-direct" data-c="ఁ">ఁ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .app-right -->
+
+</div><!-- end .app-body -->
 
 <div id="popover"></div>
 
-<div id="amaraOverlay">
-  <div id="amaraPanel">
-    <div class="library-header">
-      <span class="library-title">Sanskrit Dictionary <span style="font-size:13px;opacity:0.5;font-family:sans-serif;">(Amarakosha)</span></span>
-      <button id="amaraCloseBtn">✕</button>
-    </div>
-    <div class="amara-tabs">
-      <button class="amara-tab active" data-tab="san">Sanskrit → English</button>
-      <button class="amara-tab" data-tab="eng">English → Sanskrit</button>
-      <button class="amara-tab" data-tab="poly">Two meanings → One word</button>
-    </div>
-
-    <div class="amara-body">
-
-      <!-- Tab: Sanskrit lookup -->
-      <div class="amara-pane active" id="amara-san">
-        <div class="amara-search-row">
-          <input type="text" id="amaraSanInput" placeholder="Type a Sanskrit word (Devanagari)…">
-          <button id="amaraSanSearch">Search</button>
-        </div>
-        <div id="amaraSanResults"></div>
-      </div>
-
-      <!-- Tab: English lookup -->
-      <div class="amara-pane" id="amara-eng">
-        <div class="amara-search-row">
-          <input type="text" id="amaraEngInput" placeholder="Type an English word (e.g. sun, water, love)…">
-          <button id="amaraEngSearch">Search</button>
-        </div>
-        <div id="amaraEngResults"></div>
-      </div>
-
-      <!-- Tab: Polysemy / two meanings -->
-      <div class="amara-pane" id="amara-poly">
-        <p class="amara-help">Enter two English meanings to find Sanskrit words that carry both.</p>
-        <div class="amara-search-row">
-          <input type="text" id="amaraPoly1" placeholder="First meaning (e.g. sun)">
-          <input type="text" id="amaraPoly2" placeholder="Second meaning (e.g. deva)">
-          <button id="amaraPolySearch">Find</button>
-        </div>
-        <div id="amaraPolyResults"></div>
-      </div>
-
-    </div>
-  </div>
-</div>
+<!-- amaraOverlay removed: Sanskrit now in right panel -->
 
 
-<div id="teluguKbPanel">
-  <div class="tkb-header">
-    <div class="tkb-tabs">
-      <button class="tkb-tab active" data-tkb="letters">అ అక్షరాలు</button>
-      <button class="tkb-tab" data-tkb="phonetic">🔤 Phonetic</button>
-      <button class="tkb-tab" data-tkb="special">✦ Special</button>
-    </div>
-    <button class="tkb-close" id="teluguKbClose">✕</button>
-  </div>
-
-  <!-- TAB 1: Syllable-builder letter keyboard -->
-  <div class="tkb-pane active" id="tkb-letters">
-    <div class="tkb-syllable-preview" id="tkbPreview">
-      <span id="tkbPreviewText" class="tkb-preview-text">అక్షరం ఎంచుకోండి</span>
-      <button class="tkb-preview-commit" id="tkbCommit">↩ చేర్చు</button>
-      <button class="tkb-preview-clear" id="tkbClear">✕</button>
-    </div>
-
-    <div class="tkb-section-label">హల్లులు — consonant ని నొక్కి, vowel sign ఎంచుకోండి</div>
-    <div class="tkb-row" id="tkbConsonants">
-      <button class="tkb-key tkb-cons" data-c="క">క</button><button class="tkb-key tkb-cons" data-c="ఖ">ఖ</button><button class="tkb-key tkb-cons" data-c="గ">గ</button><button class="tkb-key tkb-cons" data-c="ఘ">ఘ</button><button class="tkb-key tkb-cons" data-c="ఙ">ఙ</button>
-      <button class="tkb-key tkb-cons" data-c="చ">చ</button><button class="tkb-key tkb-cons" data-c="ఛ">ఛ</button><button class="tkb-key tkb-cons" data-c="జ">జ</button><button class="tkb-key tkb-cons" data-c="ఝ">ఝ</button><button class="tkb-key tkb-cons" data-c="ఞ">ఞ</button>
-      <button class="tkb-key tkb-cons" data-c="ట">ట</button><button class="tkb-key tkb-cons" data-c="ఠ">ఠ</button><button class="tkb-key tkb-cons" data-c="డ">డ</button><button class="tkb-key tkb-cons" data-c="ఢ">ఢ</button><button class="tkb-key tkb-cons" data-c="ణ">ణ</button>
-      <button class="tkb-key tkb-cons" data-c="త">త</button><button class="tkb-key tkb-cons" data-c="థ">థ</button><button class="tkb-key tkb-cons" data-c="ద">ద</button><button class="tkb-key tkb-cons" data-c="ధ">ధ</button><button class="tkb-key tkb-cons" data-c="న">న</button>
-      <button class="tkb-key tkb-cons" data-c="ప">ప</button><button class="tkb-key tkb-cons" data-c="ఫ">ఫ</button><button class="tkb-key tkb-cons" data-c="బ">బ</button><button class="tkb-key tkb-cons" data-c="భ">భ</button><button class="tkb-key tkb-cons" data-c="మ">మ</button>
-      <button class="tkb-key tkb-cons" data-c="య">య</button><button class="tkb-key tkb-cons" data-c="ర">ర</button><button class="tkb-key tkb-cons" data-c="ల">ల</button><button class="tkb-key tkb-cons" data-c="వ">వ</button>
-      <button class="tkb-key tkb-cons" data-c="శ">శ</button><button class="tkb-key tkb-cons" data-c="ష">ష</button><button class="tkb-key tkb-cons" data-c="స">స</button><button class="tkb-key tkb-cons" data-c="హ">హ</button>
-      <button class="tkb-key tkb-cons" data-c="ళ">ళ</button><button class="tkb-key tkb-cons" data-c="ఱ">ఱ</button>
-    </div>
-
-    <div class="tkb-vowel-strip" id="tkbVowelStrip">
-      <span class="tkb-vowel-label">vowel sign:</span>
-      <button class="tkb-vsign" data-v="">్ (bare)</button>
-      <button class="tkb-vsign" data-v="ా">ా</button>
-      <button class="tkb-vsign" data-v="ి">ి</button>
-      <button class="tkb-vsign" data-v="ీ">ీ</button>
-      <button class="tkb-vsign" data-v="ు">ు</button>
-      <button class="tkb-vsign" data-v="ూ">ూ</button>
-      <button class="tkb-vsign" data-v="ృ">ృ</button>
-      <button class="tkb-vsign" data-v="ె">ె</button>
-      <button class="tkb-vsign" data-v="ే">ే</button>
-      <button class="tkb-vsign" data-v="ై">ై</button>
-      <button class="tkb-vsign" data-v="ొ">ొ</button>
-      <button class="tkb-vsign" data-v="ో">ో</button>
-      <button class="tkb-vsign" data-v="ౌ">ౌ</button>
-      <button class="tkb-vsign" data-v="ం">ం</button>
-      <button class="tkb-vsign" data-v="ః">ః</button>
-      <button class="tkb-vsign tkb-vsign-join" data-v="JOIN">+ join (్+next)</button>
-    </div>
-
-    <div class="tkb-section-label">అచ్చులు — standalone vowels</div>
-    <div class="tkb-row">
-      <button class="tkb-key tkb-direct" data-c="అ">అ</button><button class="tkb-key tkb-direct" data-c="ఆ">ఆ</button><button class="tkb-key tkb-direct" data-c="ఇ">ఇ</button><button class="tkb-key tkb-direct" data-c="ఈ">ఈ</button><button class="tkb-key tkb-direct" data-c="ఉ">ఉ</button><button class="tkb-key tkb-direct" data-c="ఊ">ఊ</button><button class="tkb-key tkb-direct" data-c="ఋ">ఋ</button><button class="tkb-key tkb-direct" data-c="ఎ">ఎ</button><button class="tkb-key tkb-direct" data-c="ఏ">ఏ</button><button class="tkb-key tkb-direct" data-c="ఐ">ఐ</button><button class="tkb-key tkb-direct" data-c="ఒ">ఒ</button><button class="tkb-key tkb-direct" data-c="ఓ">ఓ</button><button class="tkb-key tkb-direct" data-c="ఔ">ఔ</button>
-    </div>
-
-    <div class="tkb-actions">
-      <button class="tkb-action-btn" id="tkbBackspace">⌫</button>
-      <button class="tkb-action-btn tkb-space-btn" id="tkbSpace">Space</button>
-      <button class="tkb-action-btn" id="tkbNewline">↵</button>
-    </div>
-  </div>
-
-  <!-- TAB 2: Phonetic input with Google suggestions -->
-  <div class="tkb-pane" id="tkb-phonetic">
-    <p class="tkb-help">Type phonetically in English → get Telugu suggestions. Works when online.</p>
-    <div class="tkb-phonetic-row">
-      <input type="text" id="tkbPhoneticInput" placeholder="e.g. stree, namaskaaram, krishna…" autocomplete="off" autocorrect="off" spellcheck="false">
-      <button id="tkbPhoneticSearch">→</button>
-    </div>
-    <div id="tkbSuggestions" class="tkb-suggestions"></div>
-    <div class="tkb-phonetic-examples">
-      <span class="tkb-ex-label">Quick examples:</span>
-      <button class="tkb-example" data-word="namaskaram">namaskaram</button>
-      <button class="tkb-example" data-word="stree">stree</button>
-      <button class="tkb-example" data-word="krishna">krishna</button>
-      <button class="tkb-example" data-word="bhagavadgita">bhagavadgita</button>
-    </div>
-  </div>
-
-  <!-- TAB 3: Special characters -->
-  <div class="tkb-pane" id="tkb-special">
-    <div class="tkb-section-label">సంఖ్యలు (Telugu Numerals)</div>
-    <div class="tkb-row">
-      <button class="tkb-key tkb-direct" data-c="౦">౦</button><button class="tkb-key tkb-direct" data-c="౧">౧</button><button class="tkb-key tkb-direct" data-c="౨">౨</button><button class="tkb-key tkb-direct" data-c="౩">౩</button><button class="tkb-key tkb-direct" data-c="౪">౪</button><button class="tkb-key tkb-direct" data-c="౫">౫</button><button class="tkb-key tkb-direct" data-c="౬">౬</button><button class="tkb-key tkb-direct" data-c="౭">౭</button><button class="tkb-key tkb-direct" data-c="౮">౮</button><button class="tkb-key tkb-direct" data-c="౯">౯</button>
-    </div>
-    <div class="tkb-section-label">విరాముచిహ్నాలు (Punctuation)</div>
-    <div class="tkb-row">
-      <button class="tkb-key tkb-direct" data-c="।">।</button><button class="tkb-key tkb-direct" data-c="॥">॥</button><button class="tkb-key tkb-direct" data-c="ఽ">ఽ</button>
-    </div>
-    <div class="tkb-section-label">అరుదైన అక్షరాలు (Rare)</div>
-    <div class="tkb-row">
-      <button class="tkb-key tkb-direct" data-c="ఌ">ఌ</button><button class="tkb-key tkb-direct" data-c="ౡ">ౡ</button><button class="tkb-key tkb-direct" data-c="ౠ">ౠ</button><button class="tkb-key tkb-direct" data-c="ఁ">ఁ</button>
-    </div>
-  </div>
-</div>
+<!-- teluguKbPanel removed: keyboard now in right panel -->
 
 <div id="libraryOverlay">
   <div id="libraryPanel">
@@ -258535,9 +258807,9 @@ jszip/dist/jszip.min.js:
   }
 
   if (IS_SERVED) {
-    // On GitHub Pages: click = open panel (dictionary loads lazily on first click)
     importDictBtn.addEventListener('click', async () => {
       if (!dictionary) await fetchDictionary();
+      rpOpen('dict');
     });
     // Kick off background load 3s after page load so it's ready when needed
     setTimeout(() => { if (!dictionary) fetchDictionary(); }, 3000);
@@ -258582,50 +258854,49 @@ jszip/dist/jszip.min.js:
   function showDictPopover(word, targetRange) {
     if (!dictionary) return;
     const entries = dictionary[word.toLowerCase()];
-    const rect = targetRange.getBoundingClientRect();
 
+    // Populate right panel dict section
+    const content = document.getElementById('rpDictContent');
     if (!entries || !entries.length) {
-      popover.innerHTML = `<div class="message">No dictionary entry for "${escapeHtml(word)}".</div><div class="dismiss" id="dismissBtn">Dismiss</div>`;
+      content.innerHTML = '<p class="rp-dict-hint">No entry for "' + escapeHtml(word) + '".</p>';
     } else {
-      let html = `<div class="message" style="font-weight:600; margin-bottom:6px;">${escapeHtml(word)}</div>`;
-      entries.slice(0, 3).forEach(entry => {
-        html += `<div class="message" style="margin-bottom:8px;">`;
-        html += `<span style="opacity:0.6; font-style:italic;">${escapeHtml(entry.pos)}</span> — ${escapeHtml(entry.def)}`;
-        if (entry.ex && entry.ex.length) {
-          html += `<div style="opacity:0.6; font-size:12px; margin-top:2px;">"${escapeHtml(entry.ex[0])}"</div>`;
+      let html = '<div class="rp-dict-word">' + escapeHtml(word) + '</div>';
+      entries.slice(0, 4).forEach(entry => {
+        html += '<div class="rp-dict-entry">';
+        html += '<div class="rp-dict-pos">' + escapeHtml(entry.pos || '') + '</div>';
+        html += '<div class="rp-dict-def">' + escapeHtml(entry.def || '') + '</div>';
+        if (entry.ex && entry.ex[0]) {
+          html += '<div class="rp-dict-ex">"' + escapeHtml(entry.ex[0]) + '"</div>';
         }
         if (entry.syn && entry.syn.length) {
-          html += `<div class="suggestions" style="margin-top:4px;">`;
-          entry.syn.forEach((s, i) => {
-            html += `<button class="suggestion-btn" data-replace-word="${escapeHtml(s)}">${escapeHtml(s)}</button>`;
+          html += '<div class="rp-dict-syns">';
+          entry.syn.forEach(s => {
+            html += '<button class="rp-syn-chip" data-replace-word="' + escapeHtml(s) + '">' + escapeHtml(s) + '</button>';
           });
-          html += `</div>`;
+          html += '</div>';
         }
-        html += `</div>`;
+        html += '</div>';
       });
-      html += `<div class="dismiss" id="dismissBtn">Dismiss</div>`;
-      popover.innerHTML = html;
+      content.innerHTML = html;
+
+      // Wire synonym clicks
+      content.querySelectorAll('[data-replace-word]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const replacement = btn.dataset.replaceWord;
+          const startOffset = getRangeCharOffset(targetRange, true);
+          const endOffset = getRangeCharOffset(targetRange, false);
+          const text = getPlainText();
+          const newText = text.slice(0, startOffset) + replacement + text.slice(endOffset);
+          editor.innerText = newText;
+          save();
+          updateWordCount();
+          runCheck();
+        });
+      });
     }
 
-    popover.style.left = `${window.scrollX + rect.left}px`;
-    popover.style.top = `${window.scrollY + rect.bottom + 6}px`;
-    popover.style.display = 'block';
-
-    popover.querySelectorAll('[data-replace-word]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const replacement = btn.dataset.replaceWord;
-        const startOffset = getRangeCharOffset(targetRange, true);
-        const endOffset = getRangeCharOffset(targetRange, false);
-        const text = getPlainText();
-        const newText = text.slice(0, startOffset) + replacement + text.slice(endOffset);
-        editor.innerText = newText;
-        save();
-        hidePopover();
-        updateWordCount();
-        runCheck();
-      });
-    });
-    document.getElementById('dismissBtn') && document.getElementById('dismissBtn').addEventListener('click', hidePopover);
+    // Auto-open the dict panel
+    rpOpen('dict');
   }
 
   function getRangeCharOffset(range, useStart) {
@@ -258650,8 +258921,8 @@ jszip/dist/jszip.min.js:
   // ---- Sanskrit / Amarakosha dictionary ----
   let amaraDB = null;
 
-  const amaraOverlay = document.getElementById('amaraOverlay');
-  const amaraCloseBtn = document.getElementById('amaraCloseBtn');
+  const amaraOverlay = { classList: { add: ()=>{}, remove: ()=>{} } }; // moved to right panel
+  const amaraCloseBtn = null;
 
   async function fetchAmara() {
     amaraStatus.textContent = 'loading…';
@@ -258669,7 +258940,7 @@ jszip/dist/jszip.min.js:
   if (IS_SERVED) {
     importAmaraBtn.addEventListener('click', async () => {
       if (!amaraDB) await fetchAmara();
-      if (amaraDB) amaraOverlay.classList.add('open');
+      rpOpen('amara');
     });
     // Auto-load Amara eagerly (it's only 2.67MB)
     setTimeout(() => { if (!amaraDB) fetchAmara(); }, 1000);
@@ -258687,7 +258958,7 @@ jszip/dist/jszip.min.js:
         try {
           amaraDB = JSON.parse(reader.result);
           amaraStatus.textContent = `${Object.keys(amaraDB.bySanskrit).length.toLocaleString()} words`;
-          amaraOverlay.classList.add('open');
+          rpOpen('amara');
         } catch (e) {
           amaraStatus.textContent = 'failed';
         }
@@ -258697,8 +258968,7 @@ jszip/dist/jszip.min.js:
     });
   }
 
-  amaraCloseBtn.addEventListener('click', () => amaraOverlay.classList.remove('open'));
-  amaraOverlay.addEventListener('click', (e) => { if (e.target === amaraOverlay) amaraOverlay.classList.remove('open'); });
+  // amaraOverlay removed — Sanskrit lives in right panel
 
   // Tab switching
   document.querySelectorAll('.amara-tab').forEach(tab => {
@@ -258827,9 +259097,9 @@ jszip/dist/jszip.min.js:
 
 
   // ---- Telugu On-Screen Keyboard ----
-  const teluguKbPanel = document.getElementById('teluguKbPanel');
-  const teluguKbBtn   = document.getElementById('teluguKbBtn');
-  const teluguKbClose = document.getElementById('teluguKbClose');
+  const teluguKbClose = null; // keyboard lives in right panel now
+  const teluguKbBtn = null;
+  const teluguKbPanel = { classList: { toggle: ()=>{}, remove: ()=>{}, add: ()=>{} } }; // shim
 
   // Tab switching
   teluguKbPanel.querySelectorAll('.tkb-tab').forEach(tab => {
@@ -258841,19 +259111,7 @@ jszip/dist/jszip.min.js:
     });
   });
 
-  teluguKbBtn.addEventListener('click', () => {
-    const isOpen = teluguKbPanel.classList.toggle('open');
-    teluguKbBtn.style.color = isOpen ? 'var(--flag)' : '';
-    if (isOpen) {
-      // Save editor selection so we can restore it for insertAtCursor
-      savedSelection = saveEditorSelection();
-    }
-  });
-
-  teluguKbClose.addEventListener('click', () => {
-    teluguKbPanel.classList.remove('open');
-    teluguKbBtn.style.color = '';
-  });
+  // Keyboard now lives in right panel accordion
 
   // ---- Selection save/restore (keyboard clicks move focus away from editor) ----
   let savedSelection = null;
@@ -259103,6 +259361,47 @@ jszip/dist/jszip.min.js:
       fetchPhoneticSuggestions(btn.dataset.word);
     });
   });
+
+  // ════════════════════════════════════
+  // RIGHT PANEL ACCORDION
+  // ════════════════════════════════════
+  const appRight = document.getElementById('appRight');
+  let rpOpenPanels = [];
+
+  function rpOpen(id) {
+    const section = document.getElementById('rp-' + id);
+    if (!section) return;
+    if (rpOpenPanels.includes(id)) { rpClose(id); return; }
+    if (rpOpenPanels.length >= 2) rpClose(rpOpenPanels[0]);
+    rpOpenPanels.push(id);
+    section.classList.add('rp-open');
+    const arrow = section.querySelector('.rp-arrow');
+    if (arrow) arrow.textContent = '▼';
+    if (appRight) appRight.classList.add('mobile-open');
+  }
+
+  function rpClose(id) {
+    rpOpenPanels = rpOpenPanels.filter(x => x !== id);
+    const section = document.getElementById('rp-' + id);
+    if (!section) return;
+    section.classList.remove('rp-open');
+    const arrow = section.querySelector('.rp-arrow');
+    if (arrow) arrow.textContent = '▶';
+  }
+
+  document.querySelectorAll('.rp-header[data-rp]').forEach(btn => {
+    btn.addEventListener('click', () => rpOpen(btn.dataset.rp));
+  });
+
+  const rpToggleBtn = document.getElementById('rpToggleBtn');
+  if (rpToggleBtn) {
+    rpToggleBtn.addEventListener('click', () => {
+      if (appRight) appRight.classList.toggle('mobile-open');
+    });
+  }
+
+  // Open Dictionary by default
+  setTimeout(() => rpOpen('dict'), 300);
 
   loadDocuments();
   renderTabs();
