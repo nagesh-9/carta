@@ -259028,12 +259028,12 @@ jszip/dist/jszip.min.js:
   // ---- TAB 1: Syllable-builder ----
   const tkbPreviewText = document.getElementById('tkbPreviewText');
   const tkbVowelStrip  = document.getElementById('tkbVowelStrip');
-  let tkbBuffer = '';          // text waiting to be committed to editor
-  let tkbPendingCons = '';     // consonant chosen, waiting for vowel sign
-  let tkbJoinMode = false;     // user pressed JOIN — next consonant appends halant+cons
+  let tkbBuffer = '';          // fully committed text so far
+  let tkbPendingCons = '';     // most recent consonant, not yet committed — awaiting a vowel sign or JOIN
 
   function tkbUpdatePreview() {
-    tkbPreviewText.textContent = tkbBuffer || 'అక్షరం ఎంచుకోండి';
+    const shown = tkbBuffer + tkbPendingCons;
+    tkbPreviewText.textContent = shown || 'అక్షరం ఎంచుకోండి';
   }
 
   // Consonant clicked
@@ -259041,24 +259041,17 @@ jszip/dist/jszip.min.js:
     btn.addEventListener('click', () => {
       const cons = btn.dataset.c;
 
-      // Deselect all, select this one
       teluguKbPanel.querySelectorAll('.tkb-cons').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
 
-      if (tkbJoinMode) {
-        // Previous consonant + halant + new consonant
-        tkbBuffer += '్' + cons;
-        tkbJoinMode = false;
-      } else {
-        // Commit whatever was pending, start fresh
+      // If a consonant was already pending (shouldn't normally happen — vowel/JOIN
+      // always resolves it — but handle defensively), commit it plainly first.
+      if (tkbPendingCons) {
         tkbBuffer += tkbPendingCons;
-        tkbPendingCons = cons;
       }
-
       tkbPendingCons = cons;
-      tkbUpdatePreview();
 
-      // Show vowel strip
+      tkbUpdatePreview();
       tkbVowelStrip.classList.add('visible');
     });
   });
@@ -259069,10 +259062,12 @@ jszip/dist/jszip.min.js:
       const v = btn.dataset.v;
 
       if (v === 'JOIN') {
-        // User wants to form a conjunct: append current cons + halant, wait for next cons
-        tkbBuffer += tkbPendingCons;
-        tkbPendingCons = '';
-        tkbJoinMode = true;
+        // Commit the pending consonant WITH a virama, so the next consonant
+        // clicked attaches directly to it, forming a conjunct (సంయుక్తాక్షరం).
+        if (tkbPendingCons) {
+          tkbBuffer += tkbPendingCons + '్';
+          tkbPendingCons = '';
+        }
         tkbVowelStrip.classList.remove('visible');
         teluguKbPanel.querySelectorAll('.tkb-cons').forEach(b => b.classList.remove('selected'));
         tkbUpdatePreview();
@@ -259080,13 +259075,12 @@ jszip/dist/jszip.min.js:
       }
 
       if (v === '') {
-        // bare consonant (with implicit virama — no extra sign needed visually)
+        // bare consonant (implicit 'a' vowel)
         tkbBuffer += tkbPendingCons;
       } else {
         tkbBuffer += tkbPendingCons + v;
       }
       tkbPendingCons = '';
-      tkbJoinMode = false;
       tkbVowelStrip.classList.remove('visible');
       teluguKbPanel.querySelectorAll('.tkb-cons').forEach(b => b.classList.remove('selected'));
       tkbUpdatePreview();
@@ -259109,14 +259103,14 @@ jszip/dist/jszip.min.js:
   document.getElementById('tkbCommit').addEventListener('click', () => {
     if (tkbPendingCons) tkbBuffer += tkbPendingCons;
     if (tkbBuffer) insertAtCursor(tkbBuffer);
-    tkbBuffer = ''; tkbPendingCons = ''; tkbJoinMode = false;
+    tkbBuffer = ''; tkbPendingCons = '';
     tkbVowelStrip.classList.remove('visible');
     teluguKbPanel.querySelectorAll('.tkb-cons').forEach(b => b.classList.remove('selected'));
     tkbUpdatePreview();
   });
 
   document.getElementById('tkbClear').addEventListener('click', () => {
-    tkbBuffer = ''; tkbPendingCons = ''; tkbJoinMode = false;
+    tkbBuffer = ''; tkbPendingCons = '';
     tkbVowelStrip.classList.remove('visible');
     teluguKbPanel.querySelectorAll('.tkb-cons').forEach(b => b.classList.remove('selected'));
     tkbUpdatePreview();
